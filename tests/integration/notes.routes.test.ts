@@ -51,29 +51,31 @@ describe('Rutas HTTP - PATCH /notes/:id (Ejercicio 4)', () => {
   });
 });
 
-describe('GET /notes/:id (Ejercicio 3)', () => {
+
+describe('Rutas HTTP - DELETE /notes/:id (Ejercicio 5)', () => {
   let app: ReturnType<typeof makeApp>;
 
   beforeEach(() => {
     app = makeApp(':memory:');
   });
 
-  it('responde 200 con la nota cuando el id existe', async () => {
-    const created = await request(app)
+  it('DELETE /notes/:id elimina la nota y responde 204', async () => {
+    const createRes = await request(app)
       .post('/notes')
-      .send({ title: 'Comprar pan', content: 'Antes de las 20hs' });
+      .send({ title: 'Nota a eliminar', content: 'Contenido' });
 
-    const res = await request(app).get(`/notes/${created.body.id}`);
+    const noteId = createRes.body.id;
 
-    expect(res.status).toBe(200);
-    expect(res.body).toEqual(created.body);
-    expect(res.body.title).toBe('Comprar pan');
-    expect(res.body.content).toBe('Antes de las 20hs');
-    expect(res.body.pinned).toBe(false);
+    const deleteRes = await request(app).delete(`/notes/${noteId}`);
+
+    expect(deleteRes.status).toBe(204);
+
+    const listRes = await request(app).get('/notes');
+    expect(listRes.body).toHaveLength(0);
   });
 
-  it('responde 404 cuando el id no existe', async () => {
-    const res = await request(app).get('/notes/999');
+  it('DELETE /notes/:id responde 404 si la nota no existe', async () => {
+    const res = await request(app).delete('/notes/999');
 
     expect(res.status).toBe(404);
     expect(res.body).toEqual({ error: 'NotFound' });
