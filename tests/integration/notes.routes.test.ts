@@ -50,3 +50,34 @@ describe('Rutas HTTP - PATCH /notes/:id (Ejercicio 4)', () => {
     expect(res.body.error).toBe('ValidationError');
   });
 });
+
+
+describe('Rutas HTTP - DELETE /notes/:id (Ejercicio 5)', () => {
+  let app: ReturnType<typeof makeApp>;
+
+  beforeEach(() => {
+    app = makeApp(':memory:');
+  });
+
+  it('DELETE /notes/:id elimina la nota y responde 204', async () => {
+    const createRes = await request(app)
+      .post('/notes')
+      .send({ title: 'Nota a eliminar', content: 'Contenido' });
+
+    const noteId = createRes.body.id;
+
+    const deleteRes = await request(app).delete(`/notes/${noteId}`);
+
+    expect(deleteRes.status).toBe(204);
+
+    const listRes = await request(app).get('/notes');
+    expect(listRes.body).toHaveLength(0);
+  });
+
+  it('DELETE /notes/:id responde 404 si la nota no existe', async () => {
+    const res = await request(app).delete('/notes/999');
+
+    expect(res.status).toBe(404);
+    expect(res.body).toEqual({ error: 'NotFound' });
+  });
+});
