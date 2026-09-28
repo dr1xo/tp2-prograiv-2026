@@ -50,3 +50,32 @@ describe('Rutas HTTP - PATCH /notes/:id (Ejercicio 4)', () => {
     expect(res.body.error).toBe('ValidationError');
   });
 });
+
+describe('GET /notes/:id (Ejercicio 3)', () => {
+  let app: ReturnType<typeof makeApp>;
+
+  beforeEach(() => {
+    app = makeApp(':memory:');
+  });
+
+  it('responde 200 con la nota cuando el id existe', async () => {
+    const created = await request(app)
+      .post('/notes')
+      .send({ title: 'Comprar pan', content: 'Antes de las 20hs' });
+
+    const res = await request(app).get(`/notes/${created.body.id}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual(created.body);
+    expect(res.body.title).toBe('Comprar pan');
+    expect(res.body.content).toBe('Antes de las 20hs');
+    expect(res.body.pinned).toBe(false);
+  });
+
+  it('responde 404 cuando el id no existe', async () => {
+    const res = await request(app).get('/notes/999');
+
+    expect(res.status).toBe(404);
+    expect(res.body).toEqual({ error: 'NotFound' });
+  });
+});
