@@ -60,7 +60,31 @@ test.describe('E2E - Flujo de Notas (Ejercicio 7)', () => {
   });
 
   // ==========================================
-  // CASO DE ERROR (A implementar)
+  // CASO DE ERROR 
   // ==========================================
 
+    // ==========================================
+  // CASO DE ERROR
+  // Datos inválidos: la API rechaza la nota y no modifica el estado
+  // ==========================================
+  test('caso de error: rechaza una nota con content vacio', async ({ request }) => {
+    // Intentar crear una nota invalida, con el content vacip
+    const createRes = await request.post('/notes', {
+      data: {
+        title: 'Nota sin contenido',
+        content: '',
+      },
+    });
+
+    // Verificar el rechazo: 400 con el formato de error del controller
+    expect(createRes.status()).toBe(400);
+    const errorBody = await createRes.json();
+    expect(errorBody.error).toBe('ValidationError');
+
+    // Verificar que la nota invalida no se guardo (quedan solo las 2 de la semilla)
+    const listRes = await request.get('/notes');
+    expect(listRes.status()).toBe(200);
+    const notes = await listRes.json();
+    expect(notes).toHaveLength(2);
+  });
 });
